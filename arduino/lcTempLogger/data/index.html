@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Lc Templogger</title>
+    <meta name="description" content="Templogger">
+    <meta name="author" content="littlecheetah">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="skeleton.css">
+    <link rel="shortcut icon" type="image/png" href="favico.png">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        If you set up everything start over! <input class="button-primary" type="submit" value="Start" id="StartOver">
+        <input class="button u-pull-right red" type="submit" value="Factory reset" id="Reset">
+    </div>
+    <form>
+        <div class="row">
+            <h5>
+                Wifi
+            </h5>
+        </div>
+        <div class="row">
+
+            <div class="six columns">
+                <label for="WifiName">Select your network</label>
+                <select class="u-full-width" id="WifiName">
+                </select>
+            </div>
+
+            <div class="six columns">
+                <label for="WifiPassword">Password</label>
+                <input class="u-full-width" type="password" placeholder="Password123" id="WifiPassword">
+            </div>
+        </div>
+        <div class="row">
+            <!--- info --->
+            <div class="six columns">
+                <label for="WifiStatus">Status</label>
+                <input class="u-full-width" type="text" value="" id="WifiStatus" disabled>
+            </div>
+            <div class="six columns">
+                <label for="WifiIP">IP</label>
+                <input class="u-full-width" type="text" value="0.0.0.0" id="WifiIP" disabled>
+            </div>
+        </div>
+        <input class="button-primary" type="submit" value="Save" id="WifiSave">
+    </form>
+    <form>
+        <div class="row">
+            <h5>
+                Sensors
+            </h5>
+        </div>
+        <div class="row">
+            <div class="six columns">
+                <label for="SensorType">Type</label>
+                <input class="u-full-width" type="text" value="" id="SensorType" disabled>
+            </div>
+            <div class="six columns">
+                <label for="SensorValue">Value</label>
+                <input class="u-full-width" type="text" value="" id="SensorValue" disabled>
+            </div>
+        </div>
+        <div class="row">
+            <div class="six columns">
+                <label for="Battery">Type</label>
+                <input class="u-full-width" type="text" value="Battery" id="Battery" disabled>
+            </div>
+            <div class="six columns">
+                <label for="BatteryValue">Value</label>
+                <input class="u-full-width" type="text" value="" id="BatteryValue" disabled>
+            </div>
+        </div>
+        <input class="button-primary" type="button" value="Reload" id="SensorReload">
+    </form>
+    <form>
+        <div class="row">
+            <h5>
+                API's
+            </h5>
+        </div>
+        <div class="row">
+            <div class="twelve columns">
+                <small>%VALUE% will be replaced with the value of the sensor in URL, headers and post-data, %BATTERY% will be replaced with the supplyvoltage</small>
+            </div>
+        </div>
+        <div class="row">
+            <div class="twelve columns">
+                <label for="APIPreset">Preset</label>
+                <select class="u-full-width" id="APIPreset">
+                    <option value="custom">Custom</option>
+                    <option value="emoncms">Emoncms.org</option>
+                    <option value="thinkspeak">Thinkspeak.com (not tested)</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="two columns">
+                <label for="APIInterval">Post interval</label>
+                <select class="u-full-width" id="APIInterval">
+                    <option value="1">1 Minutes</option>
+                    <option value="15">15 Minutes</option>
+                    <option value="30">30 Minutes</option>
+                    <option value="60">60 Minutes</option>
+                    <option value="120">120 Minutes</option>
+                </select>
+            </div>
+            <div class="two columns">
+                <label for="APIMethod">Method</label>
+                <select class="u-full-width" id="APIMethod">
+                    <option value="post">POST</option>
+                    <option value="get">GET</option>
+                </select>
+            </div>
+            <div class="eight columns">
+                <label for="APIUrl">API Endpoint</label>
+                <input class="u-full-width" type="text" placeholder="http://myhost.org/api/" id="APIUrl">
+            </div>
+
+            <div class="twelve columns">
+                <label for="APIHeaders">Additional headers</label>
+                <small>(use headername=xyz per line)</small>
+                <textarea class="u-full-width" placeholder="x-auth=TOKEN" id="APIHeaders"></textarea>
+            </div>
+            <div class="twelve columns">
+                <label for="APIPostData">Post data</label>
+                <small>(use headername=xyz&header2=asdf)</small>
+                <textarea class="u-full-width" placeholder="auth=TOKEN&value=%VALUE%" id="APIPostData"></textarea>
+            </div>
+        </div>
+        <input class="button-primary" type="submit" value="Save" id="APISave">
+    </form>
+    <form>
+        <div class="row">
+            <h5>
+                Test API
+            </h5>
+        </div>
+        <div class="row">
+            <div class="twelve columns">
+                <small>Make a test-request</small>
+                <input class="button-primary" type="submit" value="Test" id="APITest">
+            </div>
+            <div class="twelve columns">
+                <label for="APITestData">Response</label>
+                <textarea class="u-full-width" id="APITestData"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="zepto.min.js"></script>
+<script>
+    // only one request when getNetworkStatus takes longer
+    var bPolling = false;
+
+    function getNetworkStatus() {
+        if(bPolling)
+            return;
+
+        bPolling = true;
+        $.get('/getNetworkStatus', function (response) {
+            bPolling = false;
+            var oNStatus = JSON.parse(response);
+            console.log(oNStatus);
+
+            $("#WifiStatus").val(oNStatus.state);
+            $("#WifiIP").val(oNStatus.ip);
+        });
+    }
+    function getTestApi() {
+        $.get('/setApiRequest', function (response) {
+            $("#APITestData").val(response);
+        });
+    }
+    function getNetworks() {
+        bPolling = true;
+        $.get('/getNetworks', function (response) {
+            bPolling = false;
+            var aNetworks = response.split(/\r?\n/);
+            var elNetowk = $("#WifiName");
+            for (var i = 0; i < aNetworks.length; i++) {
+                if(aNetworks[i].length === 0)
+                    continue;
+                elNetowk.append("<option value=\""+aNetworks[i]+"\">"+aNetworks[i]+"</option>");
+            }
+        })
+    }
+    function factoryReset() {
+        $.get('/factoryReset', function (response) {
+            alert("please reload")
+        });
+    }
+    function getApiSettings() {
+        $.get('/getApiSettings', function (response) {
+            var oSettings = JSON.parse(response);
+            console.log(oSettings);
+
+            $("#APIUrl").val(oSettings.endpoint);
+            $("#APIHeaders").val(oSettings.headers);
+            $("#APIPostData").val(oSettings.post);
+            document.getElementById('APIMethod').value=oSettings.method;
+            document.getElementById('APIInterval').value=oSettings.interval;
+        });
+    }
+    function getSensor() {
+        $.get('/getSensor', function (response) {
+            var oSensors = JSON.parse(response);
+            console.log(oSensors);
+
+            $("#SensorType").val(oSensors.sensor);
+            $("#SensorValue").val(oSensors.value);
+            $("#BatteryValue").val(oSensors.battery);
+        });
+    }
+    function saveApiSettings() {
+        var selMethod = document.getElementById("APIMethod");
+        var sMethod = selMethod.options[selMethod.selectedIndex].value;
+        var selInterval = document.getElementById("APIInterval");
+        var sInterval = selInterval.options[selInterval.selectedIndex].value;
+
+        var data = {
+            ApiMethod    : sMethod,
+            ApiEndpoint: $("#APIUrl").val(),
+            ApiHeaders: $("#APIHeaders").val(),
+            ApiPost     : $("#APIPostData").val(),
+            ApiInterval : sInterval
+        };
+        console.log(data);
+
+        $.post('/saveApiSettings', data, function(response){
+            // process response
+        });
+    }
+    function startOver() {
+        $.get('/goToSleep', function (response) {
+           alert(response);
+        });
+    }
+    $("#WifiSave").on('click', function(e){
+        e.preventDefault();
+
+        var sel = document.getElementById("WifiName");
+        var sName = sel.options[sel.selectedIndex].value;
+
+        var sPass = $("#WifiPassword").val();
+
+        var url = "/saveWifiSettings?WifiName="+sName+"&WifiPass="+sPass;
+
+        console.log(url);
+        $.get(url, function (response) {
+            alert(response);
+        });
+    });
+
+    $("#SensorReload").on("click",function (e) {
+        e.preventDefault();
+        getSensor();
+    });
+    $("#APISave").on("click",function (e) {
+        e.preventDefault();
+        saveApiSettings();
+    });
+    $("#APITest").on("click",function (e) {
+        e.preventDefault();
+        getTestApi();
+    });
+    $("#StartOver").on("click",function (e) {
+        e.preventDefault();
+        startOver();
+    });
+    $("#Reset").on("click",function (e) {
+        e.preventDefault();
+        var result = confirm("This will delete all settings and will restart the logger!")
+        if(result === true)
+            factoryReset();
+    });
+
+    $("#APIPreset").on("change",function (e) {
+        e.preventDefault();
+
+
+        var selSelectPreset = document.getElementById("APIPreset");
+        var sPreset = selSelectPreset.options[selSelectPreset.selectedIndex].value;
+        console.log(sPreset);
+        switch (sPreset)
+        {
+            case "emoncms":
+                $("#APIUrl").val("http://emoncms.org/input/post?json={temp:%VALUE%}&apikey=<apikey>");
+                $("#APIHeaders").val("");
+                $("#APIPostData").val("");
+                document.getElementById('APIMethod').value="get";
+                break;
+            case "thinkspeak":
+                $("#APIUrl").val("http://api.thingspeak.com/");
+                $("#APIHeaders").val("X-THINGSPEAKAPIKEY=<apikey>");
+                $("#APIPostData").val("temp=%VALUE%");
+                document.getElementById('APIMethod').value="post";
+                break;
+            case "custom":
+                getApiSettings();
+                break;
+
+        }
+
+    });
+    window.onload = function () {
+        console.log('document loaded');
+
+        setInterval(getNetworkStatus, 5000);
+        setTimeout(getNetworks,500);
+        getSensor();
+        getApiSettings();
+
+
+    }
+</script>
+</body>
+</html>

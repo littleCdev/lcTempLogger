@@ -1,0 +1,4 @@
+eagle/eagle.epf
+eagle/*.b#*
+eagle/*.s#*
+./idea
