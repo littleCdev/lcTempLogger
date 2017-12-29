@@ -60,7 +60,12 @@ to press the "Set" button once and the ESP will wake up with the accesspoint ena
 ## Boards
 the board is designed to work with normal AAA-batteries or a 3.7V Lipo including a simple charging circuit using the TP4056 and a MCP1700 as voltageregulator.
 You can find the eagle-files in eagle/ (eagle version 7.5)
->For battery powered boards set SJ1 and **don't** place following components 
+Boards can be easily ordered at [aisler.net](https://aisler.net/littleCdev/my-project-repository/esp8266-templogger)
+
+Example boards from aisler, left: AAA-battery powered, right using a 3.7V 500mAh lipo battery with charger
+![Example boards from aisler](docs/board-example.jpg "Example boards from aisler")
+
+>For AAA-battery powered boards set SJ1 and **don't** place following components 
 * IC1 
 * IC3
 * R1
