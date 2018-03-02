@@ -464,7 +464,7 @@ void checkForDeepSleep(){
   g_bDeepSleep = true;
   
   WiFi.hostname(HOSTNAME);
-  WiFi.mode(WIFI_AP);
+  WiFi.mode(WIFI_STA);
   WifiTryConnect();
   int i=0;
   while (WiFi.status() != WL_CONNECTED) {
