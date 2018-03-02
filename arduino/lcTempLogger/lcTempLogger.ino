@@ -87,8 +87,7 @@ void goToSleep(){
 
 void shutdown(){
   Serial.println("shutdown");
-  // "shutdown" just sleep for 27 years
-  ESP.deepSleep(999999999*999999999U, WAKE_RF_DEFAULT);
+  ESP.deepSleep(999999999*999999999*999999999U, WAKE_RF_DEFAULT);
   delay(100);
 }
 
